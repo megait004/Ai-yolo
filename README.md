@@ -125,35 +125,6 @@ python scripts/run_gui.py
 
 Xem hướng dẫn chi tiết tại [GUI Guide](docs/GUI_GUIDE.md)
 
-### Chạy với Command Line
-
-**Chạy với webcam:**
-
-```bash
-python src/main.py
-```
-
-**Chạy với file video:**
-
-```bash
-python src/main.py --source path/to/video.mp4
-```
-
-**Chạy demo tương tác:**
-
-```bash
-python scripts/demo.py
-```
-
-**Các phím điều khiển:**
-
--   **q**: Thoát ứng dụng
--   **r**: Reset thống kê
--   **s**: Lưu dữ liệu ngay lập tức
--   **h**: Hiển thị trợ giúp
--   **a**: Bật/tắt hệ thống cảnh báo
--   **d**: Bật/tắt lưu dữ liệu
-
 ## 🧪 Testing
 
 ### Chạy tất cả tests
