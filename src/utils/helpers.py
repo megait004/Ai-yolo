@@ -34,7 +34,9 @@ def validate_video_source(source: Union[str, int]) -> bool:
         return False
 
 
-def format_timestamp(timestamp: Optional[float] = None) -> str:  # pyright: ignore[reportDeprecated]
+def format_timestamp(
+    timestamp: Optional[float] = None,
+) -> str:  # pyright: ignore[reportDeprecated]
     """
     Format timestamp to readable string
 
