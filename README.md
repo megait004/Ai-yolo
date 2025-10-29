@@ -69,14 +69,7 @@ person-detection-yolo/
 └── README.md                    # This file
 ```
 
-## 📚 Tài Liệu
-
-Tất cả tài liệu chi tiết được tổ chức trong thư mục `docs/`:
-
--   **[📋 INSTALLATION.md](docs/INSTALLATION.md)** - Hướng dẫn cài đặt chi tiết
--   **[🏃 USAGE.md](docs/USAGE.md)** - Hướng dẫn sử dụng
 -   **[🎨 GUI_GUIDE.md](docs/GUI_GUIDE.md)** - Hướng dẫn giao diện GUI
--   **[⚙️ FEATURES.md](docs/FEATURES.md)** - Tính năng hệ thống
 
 ## 🛠️ Cài Đặt Nhanh
 
@@ -89,9 +82,6 @@ Tất cả tài liệu chi tiết được tổ chức trong thư mục `docs/`:
 ### Cài đặt cơ bản
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/person-detection-yolo.git
-cd person-detection-yolo
 
 # Cài đặt dependencies
 pip install -r requirements.txt

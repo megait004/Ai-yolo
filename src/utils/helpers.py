@@ -5,7 +5,7 @@ Helper functions for the application
 import os
 import time
 from datetime import datetime
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union  # pyright: ignore[reportDeprecated]
 
 import cv2
 import numpy as np
@@ -34,7 +34,7 @@ def validate_video_source(source: Union[str, int]) -> bool:
         return False
 
 
-def format_timestamp(timestamp: Optional[float] = None) -> str:
+def format_timestamp(timestamp: Optional[float] = None) -> str:  # pyright: ignore[reportDeprecated]
     """
     Format timestamp to readable string
 

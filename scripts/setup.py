@@ -1,208 +1,292 @@
 """
 Script cài đặt và thiết lập hệ thống
+Tự động phát hiện GPU và cài đặt PyTorch phù hợp
 """
 
 import os
 import sys
 import subprocess
-from ultralytics import YOLO
+import platform
 
 
-def install_requirements():
-    """
-    Cài đặt các thư viện cần thiết
-    """
-    print("=== CÀI ĐẶT THƯ VIỆN ===")
+def detect_nvidia_gpu():
+    """Phát hiện GPU NVIDIA"""
+    try:
+        result = subprocess.run(
+            ['nvidia-smi'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5
+        )
+        return result.returncode == 0
+    except:
+        return False
+
+
+def get_cuda_version():
+    """Lấy phiên bản CUDA"""
+    try:
+        result = subprocess.run(
+            ['nvidia-smi'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            import re
+            match = re.search(r'CUDA Version:\s*(\d+\.\d+)', result.stdout)
+            if match:
+                return match.group(1)
+        return None
+    except:
+        return None
+
+
+def install_pytorch_smart():
+    """Cài đặt PyTorch thông minh theo GPU"""
+    print("\n" + "="*60)
+    print("CÀI ĐẶT PYTORCH")
+    print("="*60)
+
+    # Kiểm tra PyTorch đã có chưa
+    try:
+        import torch
+        print(f"✓ PyTorch đã có: {torch.__version__}")
+        if torch.cuda.is_available():
+            print(f"✓ CUDA đã kích hoạt: {torch.cuda.get_device_name(0)}")
+            return True
+        else:
+            print("⚠ PyTorch hiện tại chỉ hỗ trợ CPU")
+            if detect_nvidia_gpu():
+                response = input("\n💡 Có GPU nhưng không dùng CUDA. Cài lại? (y/n): ").lower()
+                if response != 'y':
+                    return True
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "uninstall", "torch", "torchvision", "-y"
+                ])
+            else:
+                return True
+    except ImportError:
+        print("PyTorch chưa được cài")
+
+    # Xác định phiên bản cần cài
+    has_gpu = detect_nvidia_gpu()
+
+    if has_gpu:
+        cuda_ver = get_cuda_version()
+        print(f"\n🚀 Phát hiện GPU NVIDIA (CUDA {cuda_ver or 'unknown'})")
+
+        # Chọn CUDA version
+        if cuda_ver:
+            cuda_major = int(cuda_ver.split('.')[0])
+            if cuda_major >= 12:
+                index_url = "https://download.pytorch.org/whl/cu121"
+                print("   → Cài PyTorch CUDA 12.1")
+            elif cuda_major == 11:
+                index_url = "https://download.pytorch.org/whl/cu118"
+                print("   → Cài PyTorch CUDA 11.8")
+            else:
+                index_url = None
+                print("   → CUDA quá cũ, cài CPU")
+        else:
+            index_url = "https://download.pytorch.org/whl/cu118"
+            print("   → Cài PyTorch CUDA 11.8 (mặc định)")
+
+        try:
+            if index_url:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "install",
+                    "torch", "torchvision", "--index-url", index_url
+                ])
+            else:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "install",
+                    "torch>=2.0.0", "torchvision>=0.15.0"
+                ])
+            print("✓ Cài PyTorch thành công")
+            return True
+        except:
+            print("✗ Lỗi cài CUDA, thử CPU...")
+            try:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "install",
+                    "torch>=2.0.0", "torchvision>=0.15.0"
+                ])
+                return True
+            except:
+                return False
+    else:
+        print("\n💻 Không có GPU, cài PyTorch CPU")
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install",
+                "torch>=2.0.0", "torchvision>=0.15.0"
+            ])
+            print("✓ Cài PyTorch CPU thành công")
+            return True
+        except:
+            return False
+
+
+def install_other_packages():
+    """Cài đặt các thư viện khác"""
+    print("\n" + "="*60)
+    print("CÀI ĐẶT CÁC THƯ VIỆN KHÁC")
+    print("="*60)
 
     try:
-        # Nâng cấp pip trước
-        print("Đang nâng cấp pip...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+        # Nâng cấp pip
+        print("→ Nâng cấp pip...")
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "--upgrade", "pip"
+        ], stdout=subprocess.DEVNULL)
 
-        # Cài đặt numpy trước (phiên bản cố định)
-        print("Đang cài đặt numpy...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy==1.24.3"])
+        # Cài numpy
+        print("→ Cài numpy...")
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "numpy==1.24.3"
+        ], stdout=subprocess.DEVNULL)
 
-        # Cài đặt các thư viện còn lại
-        print("Đang cài đặt các thư viện còn lại...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        # Cài các thư viện khác
+        packages = [
+            "opencv-python>=4.8.0",
+            "matplotlib>=3.7.0",
+            "pillow>=10.0.0,<12.0",
+            "pandas>=2.0.0",
+            "scikit-learn>=1.3.0",
+            "albumentations>=1.3.0",
+            "PyQt6>=6.5.0",
+            "ultralytics>=8.0.0"
+        ]
 
-        print("✓ Đã cài đặt thành công các thư viện")
+        for pkg in packages:
+            print(f"→ Cài {pkg.split('>=')[0]}...")
+            try:
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", pkg],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except:
+                print(f"  ⚠ Lỗi cài {pkg}")
+
+        print("✓ Cài đặt hoàn tất")
         return True
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Lỗi khi cài đặt thư viện: {e}")
-        print("Vui lòng chạy: python fix_installation.py để sửa lỗi")
+    except Exception as e:
+        print(f"✗ Lỗi: {e}")
         return False
 
 
 def download_yolo_model():
-    """
-    Tải mô hình YOLOv8
-    """
-    print("=== TẢI MÔ HÌNH YOLOv8 ===")
+    """Tải mô hình YOLOv8"""
+    print("\n" + "="*60)
+    print("TẢI MÔ HÌNH YOLOv8")
+    print("="*60)
 
     try:
-        # Tải mô hình YOLOv8n (nano) - nhẹ nhất
-        print("Đang tải mô hình YOLOv8n...")
-        model = YOLO("yolov8n.pt")
-        print("✓ Đã tải thành công mô hình YOLOv8n")
-
-        # Test mô hình
-        print("Đang test mô hình...")
-        # Tạo một ảnh test đơn giản
+        from ultralytics import YOLO
         import numpy as np
-        test_image = np.zeros((640, 640, 3), dtype=np.uint8)
-        results = model(test_image, verbose=False)
-        print("✓ Mô hình hoạt động bình thường")
+
+        print("→ Tải YOLOv8n...")
+        model = YOLO("yolov8n.pt")
+
+        print("→ Test mô hình...")
+        test_img = np.zeros((640, 640, 3), dtype=np.uint8)
+        _ = model(test_img, verbose=False)
+
+        print("✓ Mô hình hoạt động tốt")
+        return True
+    except Exception as e:
+        print(f"✗ Lỗi: {e}")
+        return False
+
+
+def verify_installation():
+    """Xác minh cài đặt"""
+    print("\n" + "="*60)
+    print("XÁC MINH CÀI ĐẶT")
+    print("="*60)
+
+    try:
+        import torch
+        print(f"✓ PyTorch: {torch.__version__}")
+
+        if torch.cuda.is_available():
+            print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
+            print(f"✓ VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+        else:
+            print("ℹ Chạy trên CPU")
+
+        import cv2
+        print(f"✓ OpenCV: {cv2.__version__}")
+
+        from ultralytics import YOLO
+        print("✓ Ultralytics: OK")
 
         return True
-
     except Exception as e:
-        print(f"✗ Lỗi khi tải mô hình: {e}")
+        print(f"⚠ Lỗi: {e}")
         return False
 
 
 def create_directories():
-    """
-    Tạo các thư mục cần thiết
-    """
-    print("=== TẠO THƯ MỤC ===")
-
-    directories = [
-        "data",
-        "output",
-        "logs",
-        "models"
-    ]
-
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-            print(f"✓ Đã tạo thư mục: {directory}")
-        else:
-            print(f"✓ Thư mục đã tồn tại: {directory}")
-
-
-def test_system():
-    """
-    Test hệ thống
-    """
-    print("=== TEST HỆ THỐNG ===")
-
-    try:
-        # Test import các module
-        print("Đang test import modules...")
-        from person_detector import PersonDetector  # pyright: ignore[reportMissingImports]
-        from person_counter import PersonCounter  # pyright: ignore[reportMissingImports]
-        from visualizer import Visualizer  # pyright: ignore[reportMissingImports]
-        from data_logger import DataLogger  # pyright: ignore[reportMissingImports]
-        from alert_system import AlertSystem  # pyright: ignore[reportMissingImports]
-        print("✓ Import modules thành công")
-
-        # Test khởi tạo các class
-        print("Đang test khởi tạo classes...")
-        detector = PersonDetector()
-        counter = PersonCounter()
-        visualizer = Visualizer()
-        data_logger = DataLogger(enabled=False)  # Tắt để không tạo file
-        alert_system = AlertSystem()
-        print("✓ Khởi tạo classes thành công")
-
-        # Test OpenCV
-        print("Đang test OpenCV...")
-        import cv2
-        cap = cv2.VideoCapture(0)
-        if cap.isOpened():
-            print("✓ OpenCV hoạt động bình thường")
-            cap.release()
-        else:
-            print("⚠ Không thể truy cập webcam (có thể không có webcam)")
-
-        print("✓ Test hệ thống hoàn thành")
-        return True
-
-    except Exception as e:
-        print(f"✗ Lỗi trong test hệ thống: {e}")
-        return False
-
-
-def show_system_info():
-    """
-    Hiển thị thông tin hệ thống
-    """
-    print("=== THÔNG TIN HỆ THỐNG ===")
-
-    import platform
-    import sys
-
-    print(f"Hệ điều hành: {platform.system()} {platform.release()}")
-    print(f"Python version: {sys.version}")
-    print(f"Architecture: {platform.architecture()[0]}")
-
-    # Kiểm tra GPU
-    try:
-        import torch
-        if torch.cuda.is_available():
-            print(f"CUDA available: Yes (GPU: {torch.cuda.get_device_name(0)})")
-        else:
-            print("CUDA available: No (sử dụng CPU)")
-    except ImportError:
-        print("PyTorch not installed")
+    """Tạo thư mục cần thiết"""
+    dirs = ["data", "output", "logs", "models"]
+    for d in dirs:
+        os.makedirs(d, exist_ok=True)
 
 
 def main():
-    """
-    Hàm main cho setup
-    """
-    print("=== THIẾT LẬP HỆ THỐNG NHẬN DẠNG VÀ ĐẾM NGƯỜI ===")
-    print("Phiên bản: 1.0")
-    print("Sử dụng YOLOv8")
-    print()
+    """Hàm chính"""
+    print("\n" + "="*60)
+    print("   THIẾT LẬP HỆ THỐNG NHẬN DẠNG NGƯỜI - YOLOv8")
+    print("="*60)
 
     # Hiển thị thông tin hệ thống
-    show_system_info()
-    print()
+    print(f"\n📋 Hệ điều hành: {platform.system()} {platform.release()}")
+    print(f"📋 Python: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    print(f"📋 GPU NVIDIA: {'Có' if detect_nvidia_gpu() else 'Không'}")
 
-    # Cài đặt thư viện
-    if not install_requirements():
-        print("Không thể cài đặt thư viện. Vui lòng kiểm tra kết nối internet.")
+    # Kiểm tra Python version
+    if sys.version_info < (3, 8):
+        print("\n❌ Cần Python 3.8 trở lên")
         return
 
-    print()
+    # Bước 1: Cài PyTorch
+    if not install_pytorch_smart():
+        print("\n❌ Không thể cài PyTorch")
+        return
 
-    # Tạo thư mục
+    # Bước 2: Cài thư viện khác
+    if not install_other_packages():
+        print("\n❌ Không thể cài thư viện")
+        return
+
+    # Bước 3: Tạo thư mục
     create_directories()
-    print()
 
-    # Tải mô hình YOLO
+    # Bước 4: Tải YOLO
     if not download_yolo_model():
-        print("Không thể tải mô hình YOLO. Vui lòng kiểm tra kết nối internet.")
-        return
+        print("\n⚠ Không thể tải YOLO (có thể bỏ qua)")
 
-    print()
+    # Bước 5: Xác minh
+    verify_installation()
 
-    # Test hệ thống
-    if not test_system():
-        print("Có lỗi trong quá trình test hệ thống.")
-        return
-
-    print()
-    print("=== THIẾT LẬP HOÀN TẤT ===")
-    print("Hệ thống đã sẵn sàng sử dụng!")
-    print()
-    print("Để chạy hệ thống:")
-    print("  python main.py                    # Chạy với webcam")
-    print("  python main.py --source video.mp4 # Chạy với file video")
-    print("  python demo.py                    # Chạy demo tương tác")
-    print()
-    print("Để xem trợ giúp:")
-    print("  python main.py --help")
+    # Hoàn thành
+    print("\n" + "="*60)
+    print("   ✅ CÀI ĐẶT HOÀN TẤT!")
+    print("="*60)
+    print("\n📚 Chạy ứng dụng:")
+    print("   python scripts/run_gui.py")
+    print("\n" + "="*60)
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nThiết lập bị gián đoạn bởi người dùng")
+        print("\n\n⚠ Đã hủy bởi người dùng")
     except Exception as e:
-        print(f"Lỗi trong quá trình thiết lập: {e}")
+        print(f"\n\n❌ Lỗi: {e}")
+        print("💡 Thử chạy: python scripts/fix_installation.py")

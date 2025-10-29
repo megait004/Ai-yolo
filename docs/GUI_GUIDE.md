@@ -1,37 +1,3 @@
-# Hướng Dẫn Sử Dụng Giao Diện GUI
-
-## Tổng Quan
-
-Giao diện người dùng (GUI) được xây dựng bằng **PyQt6**, cung cấp giao diện trực quan, dễ sử dụng cho hệ thống nhận dạng và đếm người.
-
-## Cài Đặt
-
-### 1. Cài đặt PyQt6
-
-```bash
-pip install PyQt6
-```
-
-Hoặc cài đặt tất cả dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Chạy Ứng Dụng
-
-**Cách 1: Sử dụng script**
-
-```bash
-python scripts/run_gui.py
-```
-
-**Cách 2: Chạy trực tiếp từ module**
-
-```bash
-python -m src.ui.gui
-```
-
 ## Cấu Trúc Giao Diện
 
 Giao diện được chia thành **3 vùng chính**:
@@ -175,37 +141,6 @@ python scripts/run_gui.py
 -   Thông điệp cảnh báo hiển thị trên video
 -   Ghi nhận vào lịch sử cảnh báo
 
-## Lưu Ý
-
-### Yêu Cầu Hệ Thống
-
--   **Python**: 3.8+
--   **RAM**: Tối thiểu 4GB (khuyến nghị 8GB+)
--   **Camera**: USB hoặc webcam tích hợp
--   **Màn hình**: Tối thiểu 1280x720
-
-### Hiệu Suất
-
--   **FPS**: 15-30 fps tùy vào hardware
--   **GPU**: Không bắt buộc, nhưng khuyến nghị sử dụng GPU để tăng tốc
-
-### Khắc Phục Sự Cố
-
-1. **Camera không hoạt động**
-
-    - Kiểm tra camera đã kết nối
-    - Thử chọn camera khác (1, 2, ...)
-
-2. **FPS thấp**
-
-    - Giảm độ phân giải camera
-    - Tắt các ứng dụng khác
-    - Sử dụng GPU nếu có
-
-3. **Video không hiển thị**
-    - Kiểm tra file video có đúng format
-    - Kiểm tra đường dẫn file
-
 ## Build Thành Ứng Dụng Standalone
 
 Để build thành file .exe (Windows) hoặc .app (Mac):
@@ -227,15 +162,3 @@ Trong tương lai có thể thêm:
 -   `S`: Lưu dữ liệu
 -   `R`: Reset thống kê
 -   `Esc`: Thoát
-
-## Hỗ Trợ
-
-Nếu gặp vấn đề, vui lòng:
-
-1. Kiểm tra file `TROUBLESHOOTING.md`
-2. Xem log trong thư mục `logs/`
-3. Tạo issue trên GitHub
-
----
-
-**Chúc bạn sử dụng hiệu quả!** 🎉
