@@ -1,6 +1,6 @@
 # Person Detection and Counting System
 
-[![CI/CD Pipeline](https://github.com/yourusername/person-detection-yolo/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/yourusername/person-detection-yolo/actions)
+[![CI/CD Pipeline](https://github.com/megait004/person-detection-yolo/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/yourusername/person-detection-yolo/actions)
 [![codecov](https://codecov.io/gh/yourusername/person-detection-yolo/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/person-detection-yolo)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -49,7 +49,6 @@ person-detection-yolo/
 ├── docs/                         # Documentation
 │   ├── README.md                 # Main documentation
 │   ├── USAGE_GUIDE.md            # Usage guide
-│   └── TROUBLESHOOTING.md        # Troubleshooting guide
 ├── data/                         # Data storage
 │   ├── raw/                      # Raw data
 │   └── processed/                # Processed data
@@ -89,8 +88,6 @@ pip install -r requirements.txt
 # Chạy GUI
 python scripts/run_gui.py
 ```
-
-**Chi tiết:** Xem [docs/INSTALLATION.md](docs/INSTALLATION.md)
 
 ### Cài đặt cho development
 

@@ -100,19 +100,6 @@ clean:
 	find . -type d -name __pycache__ -delete
 	find . -type f -name "*.pyc" -delete
 
-# Run applications
-run:
-	python src/main.py
-
-run-webcam:
-	python src/main.py --source 0
-
-run-video:
-	python src/main.py --source data/raw/test_video.mp4
-
-demo:
-	python scripts/demo.py
-
 # Development workflow
 dev-setup: install-dev setup
 	@echo "Development environment setup complete!"
@@ -130,14 +117,6 @@ ci-test: install-dev
 	bandit -r src/ || true
 	safety check || true
 
-
-
-# Docker (for future use)
-docker-build:
-	docker build -t person-detection-yolo .
-
-docker-run:
-	docker run -it --rm person-detection-yolo
 
 # Data management
 download-models:

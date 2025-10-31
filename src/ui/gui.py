@@ -75,6 +75,11 @@ class VideoThread(QThread):
             try:
                 # Xử lý frame - frame đã là 640x480 rồi
                 detections = self.detector.detect_persons(frame)
+
+                # Debug: In số lượng detection
+                if len(detections) > 0:
+                    print(f"✅ Phát hiện {len(detections)} người")
+
                 person_count = self.counter.update_count(detections)
                 stats = self.counter.get_all_stats()
                 alert_info = self.alert_system.check_alert(person_count) or {}
@@ -84,13 +89,6 @@ class VideoThread(QThread):
                     frame, detections, person_count
                 )
                 display_frame = self.visualizer.draw_stats(display_frame, stats)
-
-                if alert_info:
-                    display_frame = self.visualizer.draw_alert(
-                        display_frame,
-                        alert_info.get("message", ""),
-                        alert_info.get("type", "info"),
-                    )
 
                 display_frame = self.visualizer.create_legend(display_frame)
 
@@ -160,9 +158,9 @@ class PersonDetectionGUI(QMainWindow):
         main_layout.addWidget(side_panel, stretch=3)
 
         # Thanh trạng thái
-        self.statusBar().showMessage(
-            "Sẵn sàng"
-        )  # pyright: ignore[reportOptionalMemberAccess]
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage("Sẵn sàng")
 
     def create_video_panel(self):
         """Tạo vùng hiển thị video chính"""
@@ -170,7 +168,7 @@ class PersonDetectionGUI(QMainWindow):
         layout = QVBoxLayout()
 
         # Label hiển thị video
-        self.video_label = (
+        self.video_label = (  # pyright: ignore[reportUninitializedInstanceVariable]
             QLabel()
         )  # pyright: ignore[reportUnannotatedClassAttribute, reportUninitializedInstanceVariable]
         self.video_label.setMinimumSize(1024, 576)
@@ -206,7 +204,7 @@ class PersonDetectionGUI(QMainWindow):
         layout = QHBoxLayout(frame)
 
         # Số người hiện tại
-        self.current_count_label = QLabel(
+        self.current_count_label = QLabel(  # pyright: ignore[reportUninitializedInstanceVariable]
             "Người hiện tại: 0"
         )  # pyright: ignore[reportUnannotatedClassAttribute, reportUninitializedInstanceVariable]
         self.current_count_label.setStyleSheet(
@@ -218,14 +216,16 @@ class PersonDetectionGUI(QMainWindow):
         )
 
         # FPS
-        self.fps_label = QLabel(
+        self.fps_label = QLabel(  # pyright: ignore[reportUninitializedInstanceVariable]
             "FPS: 0"
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.fps_label.setStyleSheet("font-size: 14px; color: #ffffff;")
 
         # Running time
-        self.time_label = QLabel(
-            "Thời gian: 00:00"
+        self.time_label = (  # pyright: ignore[reportUninitializedInstanceVariable]
+            QLabel(  # pyright: ignore[reportUninitializedInstanceVariable]
+                "Thời gian: 00:00"
+            )
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.time_label.setStyleSheet("font-size: 14px; color: #ffffff;")
 
@@ -246,8 +246,10 @@ class PersonDetectionGUI(QMainWindow):
         control_layout = QVBoxLayout()
 
         # Nút Start/Stop
-        self.start_stop_btn = QPushButton(
-            "▶ Bắt Đầu Nhận Dạng"
+        self.start_stop_btn = (  # pyright: ignore[reportUninitializedInstanceVariable]
+            QPushButton(  # pyright: ignore[reportUninitializedInstanceVariable]
+                "▶ Bắt Đầu Nhận Dạng"
+            )
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.start_stop_btn.setStyleSheet(
             """
@@ -283,26 +285,47 @@ class PersonDetectionGUI(QMainWindow):
 
         # Ngưỡng cảnh báo
         threshold_layout = QHBoxLayout()
-        threshold_label = QLabel("Ngưỡng:")
+        threshold_label = QLabel("Ngưỡng CB:")
         threshold_layout.addWidget(threshold_label)
-        self.threshold_spinbox = (
+        self.threshold_spinbox = (  # pyright: ignore[reportUninitializedInstanceVariable]
             QSpinBox()
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.threshold_spinbox.setMinimum(1)
         self.threshold_spinbox.setMaximum(100)
-        self.threshold_spinbox.setValue(5)
+        self.threshold_spinbox.setValue(10)
         self.threshold_spinbox.valueChanged.connect(self.update_threshold)
         threshold_layout.addWidget(self.threshold_spinbox)
         control_layout.addLayout(threshold_layout)
 
+        # Confidence threshold (độ tin cậy nhận diện)
+        conf_layout = QHBoxLayout()
+        conf_label = QLabel("Độ tin cậy:")
+        conf_layout.addWidget(conf_label)
+        self.conf_slider = (  # pyright: ignore[reportUninitializedInstanceVariable]
+            QSpinBox()
+        )  # pyright: ignore[reportUninitializedInstanceVariable]
+        self.conf_slider.setMinimum(30)
+        self.conf_slider.setMaximum(90)
+        self.conf_slider.setValue(55)
+        self.conf_slider.setSuffix("%")
+        self.conf_slider.setToolTip(
+            "Tăng lên để giảm phát hiện sai (nhưng có thể bỏ sót)"
+        )
+        self.conf_slider.valueChanged.connect(self.update_confidence)
+        conf_layout.addWidget(self.conf_slider)
+        control_layout.addLayout(conf_layout)
+
         # Nút lưu và xuất
         save_btn = QPushButton("💾 Lưu Dữ Liệu")
         save_btn.clicked.connect(self.save_data)
-        export_btn = QPushButton("📊 Xuất Báo Cáo")
+        export_btn = QPushButton("📊 Xuất Báo Cáo CSV")
         export_btn.clicked.connect(self.export_report)
+        export_alert_btn = QPushButton("📋 Xuất Log Cảnh Báo")
+        export_alert_btn.clicked.connect(self.export_alert_log)
 
         control_layout.addWidget(save_btn)
         control_layout.addWidget(export_btn)
+        control_layout.addWidget(export_alert_btn)
 
         control_group.setLayout(control_layout)
         layout.addWidget(control_group)
@@ -312,14 +335,16 @@ class PersonDetectionGUI(QMainWindow):
         info_layout = QVBoxLayout()
 
         # Trạng thái camera
-        self.camera_status = QLabel(
-            "🔴 Chưa kết nối"
+        self.camera_status = (
+            QLabel(  # pyright: ignore[reportUninitializedInstanceVariable]
+                "🔴 Chưa kết nối"
+            )
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.camera_status.setStyleSheet("font-size: 12px; color: #ff4444;")
         info_layout.addWidget(self.camera_status)
 
         # Panel thông tin chi tiết
-        self.info_text = (
+        self.info_text = (  # pyright: ignore[reportUninitializedInstanceVariable]
             QTextEdit()
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.info_text.setReadOnly(True)
@@ -335,8 +360,10 @@ class PersonDetectionGUI(QMainWindow):
         info_layout.addWidget(self.info_text)
 
         # Trạng thái cảnh báo
-        self.alert_status = QLabel(
-            "⚪ Trạng thái: Bình thường"
+        self.alert_status = (
+            QLabel(  # pyright: ignore[reportUninitializedInstanceVariable]
+                "⚪ Trạng thái: Bình thường"
+            )
         )  # pyright: ignore[reportUninitializedInstanceVariable]
         self.alert_status.setStyleSheet(
             """
@@ -396,12 +423,12 @@ class PersonDetectionGUI(QMainWindow):
         self.video_thread.start()
 
         self.camera_status.setText("🟢 Đang kết nối...")
-        self.statusBar().showMessage(
-            "Đang chạy nhận dạng..."
-        )  # pyright: ignore[reportOptionalMemberAccess]
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage("Đang chạy nhận dạng...")
 
         # Timer cập nhật thông tin
-        self.update_timer = (
+        self.update_timer = (  # pyright: ignore[reportUninitializedInstanceVariable]
             QTimer()
         )  # pyright: ignore[reportUnannotatedClassAttribute, reportUninitializedInstanceVariable]
         self.update_timer.timeout.connect(self.update_info)
@@ -435,9 +462,9 @@ class PersonDetectionGUI(QMainWindow):
             self.update_timer.stop()
 
         self.camera_status.setText("🔴 Đã dừng")
-        self.statusBar().showMessage(
-            "Đã dừng nhận dạng"
-        )  # pyright: ignore[reportOptionalMemberAccess]
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage("Đã dừng nhận dạng")
 
     def select_video_file(self):
         """Chọn file video"""
@@ -450,9 +477,9 @@ class PersonDetectionGUI(QMainWindow):
 
         if file_path:
             self.video_source = file_path
-            self.statusBar().showMessage(
-                f"Đã chọn: {file_path}"
-            )  # pyright: ignore[reportOptionalMemberAccess]
+            status_bar = self.statusBar()
+            if status_bar:
+                status_bar.showMessage(f"Đã chọn: {file_path}")
 
     def select_camera(self, index):
         """Chọn camera"""
@@ -462,6 +489,12 @@ class PersonDetectionGUI(QMainWindow):
         """Cập nhật ngưỡng cảnh báo"""
         self.alert_system.set_max_count(value)
 
+    def update_confidence(self, value):
+        """Cập nhật độ tin cậy nhận diện (realtime)"""
+        confidence = value / 100.0
+        self.detector.confidence_threshold = confidence
+        print(f"⚙️ Độ tin cậy: {value}% (threshold={confidence:.2f})")
+
     def save_data(self):
         """Lưu dữ liệu"""
         stats = self.counter.get_all_stats()
@@ -469,19 +502,47 @@ class PersonDetectionGUI(QMainWindow):
         QMessageBox.information(self, "Thành công", "Đã lưu dữ liệu!")
 
     def export_report(self):
-        """Xuất báo cáo"""
+        """Xuất báo cáo dữ liệu thống kê"""
         file_path, _ = QFileDialog.getSaveFileName(
             self,
-            "Xuất báo cáo",
+            "Xuất báo cáo CSV",
             f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             "CSV Files (*.csv);;All Files (*.*)",
         )
 
         if file_path:
-            # Thực hiện xuất báo cáo
-            QMessageBox.information(
-                self, "Thành công", f"Đã xuất báo cáo!\n{file_path}"
-            )
+            try:
+                # Xuất dữ liệu CSV
+                df = self.data_logger.load_data()
+                if not df.empty:
+                    df.to_csv(file_path, index=False, encoding="utf-8")
+                    QMessageBox.information(
+                        self, "Thành công", f"Đã xuất báo cáo CSV!\n{file_path}"
+                    )
+                else:
+                    QMessageBox.warning(self, "Cảnh báo", "Không có dữ liệu để xuất!")
+            except Exception as e:
+                QMessageBox.critical(self, "Lỗi", f"Lỗi khi xuất báo cáo:\n{str(e)}")
+
+    def export_alert_log(self):
+        """Xuất lịch sử cảnh báo"""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Xuất lịch sử cảnh báo",
+            f"alert_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            "Text Files (*.txt);;All Files (*.*)",
+        )
+
+        if file_path:
+            try:
+                self.alert_system.save_alert_log(file_path)
+                QMessageBox.information(
+                    self, "Thành công", f"Đã xuất lịch sử cảnh báo!\n{file_path}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self, "Lỗi", f"Lỗi khi xuất log cảnh báo:\n{str(e)}"
+                )
 
     def update_frame(self, frame, stats, alert_info):
         """Cập nhật frame video"""
@@ -584,6 +645,22 @@ class PersonDetectionGUI(QMainWindow):
         # Lưu dữ liệu cuối
         stats = self.counter.get_all_stats()
         self.data_logger.save_immediate(stats)
+
+        # Lưu log cảnh báo nếu có
+        alert_stats = self.alert_system.get_alert_stats()
+        total_alerts = alert_stats.get("total_alerts", 0)
+        if isinstance(total_alerts, int) and total_alerts > 0:
+            try:
+                from config.settings import OUTPUT_REPORTS_DIR
+
+                log_filename = (
+                    OUTPUT_REPORTS_DIR
+                    / f"alert_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                )
+                self.alert_system.save_alert_log(str(log_filename))
+                print(f"Đã tự động lưu log cảnh báo: {log_filename}")
+            except Exception as e:
+                print(f"Không thể lưu log cảnh báo khi đóng: {e}")
 
         a0.accept()  # pyright: ignore[reportOptionalMemberAccess]
 

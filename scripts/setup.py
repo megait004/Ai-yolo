@@ -50,25 +50,67 @@ def install_pytorch_smart():
     print("="*60)
 
     # Kiểm tra PyTorch đã có chưa
+    pytorch_installed = False
+    pytorch_needs_reinstall = False
+
     try:
         import torch
+        pytorch_installed = True
         print(f"✓ PyTorch đã có: {torch.__version__}")
-        if torch.cuda.is_available():
-            print(f"✓ CUDA đã kích hoạt: {torch.cuda.get_device_name(0)}")
-            return True
-        else:
-            print("⚠ PyTorch hiện tại chỉ hỗ trợ CPU")
-            if detect_nvidia_gpu():
-                response = input("\n💡 Có GPU nhưng không dùng CUDA. Cài lại? (y/n): ").lower()
-                if response != 'y':
-                    return True
-                subprocess.check_call([
-                    sys.executable, "-m", "pip", "uninstall", "torch", "torchvision", "-y"
-                ])
-            else:
+
+        # Test PyTorch có hoạt động không (tránh lỗi DLL)
+        try:
+            test_tensor = torch.randn(10, 10)
+            print("✓ PyTorch hoạt động bình thường")
+
+            if torch.cuda.is_available():
+                print(f"✓ CUDA đã kích hoạt: {torch.cuda.get_device_name(0)}")
                 return True
+            else:
+                print("⚠ PyTorch hiện tại chỉ hỗ trợ CPU")
+                if detect_nvidia_gpu():
+                    response = input("\n💡 Có GPU nhưng không dùng CUDA. Cài lại? (y/n): ").lower()
+                    if response != 'y':
+                        return True
+                    pytorch_needs_reinstall = True
+                else:
+                    return True
+
+        except Exception as dll_error:
+            print(f"✗ PyTorch có lỗi khi chạy: {dll_error}")
+
+            # Kiểm tra xem có phải lỗi DLL không
+            if "DLL" in str(dll_error) or "c10.dll" in str(dll_error):
+                print("\n⚠️ PHÁT HIỆN LỖI DLL!")
+                print("   Nguyên nhân: PyTorch CUDA trên máy không có GPU")
+                print("   Giải pháp: Sẽ tự động cài lại PyTorch CPU")
+            else:
+                print("  Có thể do PyTorch không tương thích")
+
+            pytorch_needs_reinstall = True
+
     except ImportError:
         print("PyTorch chưa được cài")
+
+    # Gỡ PyTorch nếu cần
+    if pytorch_needs_reinstall and pytorch_installed:
+        print("\n→ Gỡ PyTorch hiện tại...")
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "uninstall",
+                "torch", "torchvision", "-y"
+            ], stdout=subprocess.DEVNULL)
+            print("✓ Đã gỡ PyTorch")
+
+            # Xóa cache
+            try:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "cache", "purge"
+                ], stdout=subprocess.DEVNULL)
+            except:
+                pass
+        except Exception as e:
+            print(f"⚠ Lỗi khi gỡ: {e}")
 
     # Xác định phiên bản cần cài
     has_gpu = detect_nvidia_gpu()
@@ -104,6 +146,21 @@ def install_pytorch_smart():
                     sys.executable, "-m", "pip", "install",
                     "torch>=2.0.0", "torchvision>=0.15.0"
                 ])
+
+            # Test CUDA sau khi cài
+            print("→ Test CUDA...")
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    # Test thực sự bằng cách tạo tensor
+                    _ = torch.cuda.FloatTensor(1)
+                    print("✓ CUDA hoạt động tốt")
+                else:
+                    print("⚠ CUDA không khả dụng, nhưng PyTorch đã cài")
+            except Exception as test_err:
+                print(f"⚠ CUDA test thất bại: {test_err}")
+                print("  Hệ thống sẽ tự động chuyển sang CPU khi chạy")
+
             print("✓ Cài PyTorch thành công")
             return True
         except:
@@ -111,22 +168,56 @@ def install_pytorch_smart():
             try:
                 subprocess.check_call([
                     sys.executable, "-m", "pip", "install",
-                    "torch>=2.0.0", "torchvision>=0.15.0"
+                    "torch>=2.0.0", "torchvision>=0.15.0",
+                    "--index-url", "https://download.pytorch.org/whl/cpu"
                 ])
+                print("✓ Đã fallback sang PyTorch CPU")
                 return True
             except:
                 return False
     else:
         print("\n💻 Không có GPU, cài PyTorch CPU")
+
+        # Thử cài phiên bản cụ thể trước
         try:
+            print("→ Cài PyTorch 2.5.1 CPU...")
             subprocess.check_call([
                 sys.executable, "-m", "pip", "install",
-                "torch>=2.0.0", "torchvision>=0.15.0"
+                "torch==2.5.1", "torchvision==0.20.1",
+                "--index-url", "https://download.pytorch.org/whl/cpu"
             ])
             print("✓ Cài PyTorch CPU thành công")
+
+            # Test ngay
+            try:
+                import torch
+                _ = torch.randn(10, 10)
+                print("✓ PyTorch CPU hoạt động tốt")
+            except Exception as test_err:
+                print(f"⚠ Test thất bại: {test_err}")
+
             return True
+
         except:
-            return False
+            print("⚠ Lỗi cài phiên bản cụ thể, thử phiên bản mới nhất...")
+            try:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "install",
+                    "torch", "torchvision",
+                    "--index-url", "https://download.pytorch.org/whl/cpu"
+                ])
+                print("✓ Cài PyTorch CPU (latest) thành công")
+                return True
+            except:
+                print("⚠ Lỗi cài từ CPU index, thử cài bình thường...")
+                try:
+                    subprocess.check_call([
+                        sys.executable, "-m", "pip", "install",
+                        "torch>=2.0.0", "torchvision>=0.15.0"
+                    ])
+                    return True
+                except:
+                    return False
 
 
 def install_other_packages():
@@ -209,18 +300,36 @@ def verify_installation():
     print("="*60)
 
     try:
+        # Test PyTorch
         import torch
         print(f"✓ PyTorch: {torch.__version__}")
 
-        if torch.cuda.is_available():
-            print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
-            print(f"✓ VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
-        else:
-            print("ℹ Chạy trên CPU")
+        # Test PyTorch hoạt động
+        try:
+            test_tensor = torch.randn(10, 10)
+            result = test_tensor.sum()
+            print("✓ PyTorch hoạt động bình thường")
+        except Exception as tensor_err:
+            print(f"✗ PyTorch có lỗi: {tensor_err}")
+            return False
 
+        # Test CUDA
+        if torch.cuda.is_available():
+            try:
+                cuda_tensor = torch.cuda.FloatTensor(10)
+                print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
+                print(f"✓ VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+            except:
+                print("⚠ CUDA available nhưng không hoạt động")
+                print("ℹ Hệ thống sẽ tự động dùng CPU")
+        else:
+            print("ℹ Chạy trên CPU (không có GPU hoặc CUDA)")
+
+        # Test OpenCV
         import cv2
         print(f"✓ OpenCV: {cv2.__version__}")
 
+        # Test Ultralytics
         from ultralytics import YOLO
         print("✓ Ultralytics: OK")
 

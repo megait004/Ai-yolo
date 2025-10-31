@@ -4,7 +4,6 @@ Script sửa lỗi cài đặt và xung đột thư viện
 
 import subprocess
 import sys
-import os
 
 
 def uninstall_conflicting_packages():

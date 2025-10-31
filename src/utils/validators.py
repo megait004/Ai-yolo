@@ -6,46 +6,7 @@ import re
 from typing import Any, Dict, List
 
 
-def validate_email(email: str) -> bool:
-    """
-    Validate email format
-
-    Args:
-        email: Email address
-
-    Returns:
-        bool: True if valid, False otherwise
-    """
-    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return re.match(pattern, email) is not None
-
-
-def validate_phone(phone: str) -> bool:
-    """
-    Validate phone number format
-
-    Args:
-        phone: Phone number
-
-    Returns:
-        bool: True if valid, False otherwise
-    """
-    # Remove all non-digit characters
-    digits = re.sub(r"\D", "", phone)
-    # Check if it's a valid length (7-15 digits)
-    return 7 <= len(digits) <= 15
-
-
 def validate_config(config: Dict[str, Any]) -> List[str]:
-    """
-    Validate configuration dictionary
-
-    Args:
-        config: Configuration dictionary
-
-    Returns:
-        List[str]: List of validation errors (empty if valid)
-    """
     errors = []
 
     # Required fields

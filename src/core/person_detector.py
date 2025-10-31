@@ -24,6 +24,17 @@ def _get_yolo():
     """Lazy load YOLO model"""
     global _YOLO
     if _YOLO is None:
+        # Kiểm tra CUDA trước khi load model
+        try:
+            import torch
+
+            if not torch.cuda.is_available():
+                # Force CPU mode nếu không có CUDA
+                os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        except Exception:
+            # Nếu có lỗi gì, force CPU để an toàn
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
         from ultralytics import YOLO
 
         _YOLO = YOLO(YOLO_MODEL)  # pyright: ignore[reportConstantRedefinition]
@@ -68,22 +79,44 @@ class PersonDetector:
             # Load model lần đầu (lazy loading)
             self._ensure_model_loaded()
 
-            # Kiểm tra GPU có sẵn
-            import torch
+            # Kiểm tra GPU có sẵn - AN TOÀN với fallback
+            use_gpu = False
+            device = "cpu"
 
-            use_gpu = torch.cuda.is_available()
-            device = "0" if use_gpu else "cpu"
+            try:
+                import torch
+
+                # Kiểm tra CUDA có thực sự hoạt động không
+                if torch.cuda.is_available():
+                    try:
+                        # Test CUDA bằng cách tạo tensor nhỏ
+                        _ = torch.cuda.FloatTensor(
+                            1
+                        )  # pyright: ignore[reportAttributeAccessIssue]
+                        use_gpu = True
+                        device = "0"
+                    except Exception as cuda_err:
+                        print(f"⚠️ CUDA có nhưng không hoạt động: {cuda_err}")
+                        print("   → Chuyển sang CPU mode")
+            except Exception as torch_err:
+                print(f"⚠️ Lỗi khi import torch hoặc kiểm tra CUDA: {torch_err}")
+                print("   → Sử dụng CPU mode")
 
             # Log device info (chỉ log lần đầu)
             if not hasattr(self, "_device_logged"):
                 if use_gpu:
-                    print(f"🚀 Using GPU: {torch.cuda.get_device_name(0)}")
-                    cuda_version = getattr(
-                        torch.version, "cuda", "N/A"
-                    )  # pyright: ignore[reportAttributeAccessIssue]
-                    print(f"   CUDA Version: {cuda_version}")
+                    try:
+                        print(
+                            f"🚀 Using GPU: {torch.cuda.get_device_name(0)}"
+                        )  # pyright: ignore[reportPossiblyUnboundVariable]
+                        cuda_version = getattr(
+                            torch.version, "cuda", "N/A"
+                        )  # pyright: ignore[reportAttributeAccessIssue, reportPossiblyUnboundVariable]
+                        print(f"   CUDA Version: {cuda_version}")
+                    except:
+                        print("🚀 Using GPU")
                 else:
-                    print("⚠️ Using CPU (no GPU detected)")
+                    print("💻 Using CPU (no GPU or CUDA unavailable)")
                 self._device_logged = (
                     True  # pyright: ignore[reportUninitializedInstanceVariable]
                 )
@@ -100,12 +133,11 @@ class PersonDetector:
             # Chỉ dùng FP16 trên GPU
             if use_gpu:
                 inference_kwargs["half"] = True
-                print("✅ FP16 Half Precision enabled")
 
             # Model is guaranteed to be loaded by _ensure_model_loaded()
-            results = self.model(
-                frame, **inference_kwargs
-            )  # pyright: ignore[reportOptionalCall, reportGeneralTypeIssues, reportArgumentType]
+            results = self.model(  # pyright: ignore[reportOptionalCall]
+                frame, **inference_kwargs  # pyright: ignore[reportArgumentType]
+            )
 
             # Lọc kết quả chỉ lấy class "person"
             person_detections = []

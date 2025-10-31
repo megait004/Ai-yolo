@@ -15,9 +15,14 @@ LOGS_ROOT = PROJECT_ROOT / "logs"
 
 # YOLO Configuration
 YOLO_MODEL = "yolov8n.pt"  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
-CONFIDENCE_THRESHOLD = 0.5
-IOU_THRESHOLD = 0.45
+CONFIDENCE_THRESHOLD = 0.55  # Tăng nhẹ từ 0.5 -> 0.55 để giảm False Positive
+IOU_THRESHOLD = 0.35  # Giảm từ 0.45 -> 0.35 để loại bỏ overlap tích cực hơn (bàn tay riêng biệt)
 PERSON_CLASS_ID = 0  # Class ID for "person" in COCO dataset
+
+# Detection Filter (để debug khi cần)
+MIN_DETECTION_AREA = 800  # Diện tích tối thiểu (pixels²) - có thể dùng sau
+MIN_DETECTION_WIDTH = 25  # Chiều rộng tối thiểu
+MIN_DETECTION_HEIGHT = 50  # Chiều cao tối thiểu
 
 # Video/Camera Configuration
 DEFAULT_CAMERA_INDEX = 0
