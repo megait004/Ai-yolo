@@ -25,7 +25,7 @@ class TestPersonDetector(unittest.TestCase):
         """Test PersonDetector initialization"""
         self.assertIsNotNone(self.detector)
         self.assertEqual(self.detector.confidence_threshold, 0.5)
-        self.assertEqual(self.detector.iou_threshold, 0.45)
+        self.assertEqual(self.detector.iou_threshold, 0.35)
         self.assertEqual(self.detector.person_class_id, 0)
 
     def test_preprocess_frame(self):

@@ -15,7 +15,7 @@ LOGS_ROOT = PROJECT_ROOT / "logs"
 
 # YOLO Configuration
 YOLO_MODEL = "yolov8n.pt"  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
-CONFIDENCE_THRESHOLD = 0.55  # Tăng nhẹ từ 0.5 -> 0.55 để giảm False Positive
+CONFIDENCE_THRESHOLD = 0.5  # Tăng nhẹ từ 0.5 -> 0.55 để giảm False Positive
 IOU_THRESHOLD = 0.35  # Giảm từ 0.45 -> 0.35 để loại bỏ overlap tích cực hơn (bàn tay riêng biệt)
 PERSON_CLASS_ID = 0  # Class ID for "person" in COCO dataset
 

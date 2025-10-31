@@ -25,7 +25,7 @@ class TestIntegration:
         detector = PersonDetector()
         assert detector is not None
         assert detector.confidence_threshold == 0.5
-        assert detector.iou_threshold == 0.45
+        assert detector.iou_threshold == 0.35
         assert detector.person_class_id == 0
 
     def test_person_counter_integration(self):
