@@ -68,8 +68,6 @@ person-detection-yolo/
 └── README.md                    # This file
 ```
 
--   **[🎨 GUI_GUIDE.md](docs/GUI_GUIDE.md)** - Hướng dẫn giao diện GUI
-
 ## 🛠️ Cài Đặt Nhanh
 
 ### Yêu cầu hệ thống
