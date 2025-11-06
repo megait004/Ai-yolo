@@ -33,3 +33,6 @@ sphinx-rtd-theme>=1.2.0
 streamlit>=1.25.0
 #ghi file Excel
 openpyxl>=3.1.0
+# Build tools
+build>=1.0.0
+twine>=4.0.0
