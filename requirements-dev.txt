@@ -31,3 +31,5 @@ sphinx-rtd-theme>=1.2.0
 
 # UI Development (optional)
 streamlit>=1.25.0
+#ghi file Excel
+openpyxl>=3.1.0

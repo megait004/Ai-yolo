@@ -1,4 +1,4 @@
-=# Person Detection and Counting System Makefile
+# Person Detection and Counting System Makefile
 
 .PHONY: help install install-dev test test-unit test-integration test-e2e lint format type-check clean build docs run demo setup
 
