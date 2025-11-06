@@ -14,7 +14,7 @@ OUTPUT_ROOT = PROJECT_ROOT / "output"
 LOGS_ROOT = PROJECT_ROOT / "logs"
 
 # YOLO Configuration
-YOLO_MODEL = "models/trained/giapzech2/weights/last.pt"  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
+YOLO_MODEL = "yolov8n.pt"  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
 CONFIDENCE_THRESHOLD = 0.5  # Tăng nhẹ từ 0.5 -> 0.55 để giảm False Positive
 IOU_THRESHOLD = 0.35
 PERSON_CLASS_ID = 0  # Class ID for "person" in COCO dataset
