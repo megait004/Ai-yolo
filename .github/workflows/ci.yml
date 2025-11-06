@@ -165,7 +165,7 @@ jobs:
                   path: dist/
 
             - name: Deploy to PyPI (if configured)
-              if: false # Set to true when ready to deploy
+              if: true # Set to true when ready to deploy
               run: |
                   echo "Deploy to PyPI would happen here"
                   # twine upload dist/* --repository-url https://upload.pypi.org/legacy/ --username ${{ secrets.PYPI_USERNAME }} --password ${{ secrets.PYPI_PASSWORD }}
