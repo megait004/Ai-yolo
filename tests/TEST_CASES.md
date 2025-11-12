@@ -555,7 +555,279 @@ tests/unit/person_detector_test.py .....                                 [100%]
 
 ---
 
-## 7. Chạy Tests
+## 7. Bảng quyết định (Decision Table Testing)
+
+### 7.1. AlertSystem - Decision Table
+
+#### B1: Liệt kê các điều kiện đầu vào (Conditions)
+
+| Condition                     | Các giá trị có thể             |
+| ----------------------------- | ------------------------------ |
+| **enabled**                   | True, False                    |
+| **person_count vs max_count** | < max, = max, +1-2, +3-5, > +5 |
+| **is_alert_active**           | True, False                    |
+| **trong cooldown**            | True, False                    |
+
+#### B2: Xác định số lượng Rules
+
+Tổng số kết hợp: 2 × 5 × 2 × 2 = **40 rules**
+
+Sau khi rút gọn (vì một số kết hợp không hợp lý): **12 rules**
+
+#### B3 & B4: Bảng quyết định đầy đủ (đã rút gọn)
+
+| Conditions / Rules                     | R1  | R2  | R3   | R4       | R5       | R6       | R7  | R8  | R9  | R10  | R11  | R12  |
+| -------------------------------------- | --- | --- | ---- | -------- | -------- | -------- | --- | --- | --- | ---- | ---- | ---- |
+| **enabled**                            | F   | T   | T    | T        | T        | T        | T   | T   | T   | T    | T    | T    |
+| **count < max_count**                  | -   | T   | F    | F        | F        | F        | F   | F   | F   | F    | F    | F    |
+| **count = max_count**                  | -   | F   | T    | F        | F        | F        | F   | F   | F   | F    | F    | F    |
+| **count vượt 1-2** (warning)           | -   | F   | F    | T        | F        | F        | T   | F   | F   | F    | F    | F    |
+| **count vượt 3-5** (critical)          | -   | F   | F    | F        | T        | F        | F   | T   | F   | F    | F    | F    |
+| **count vượt >5** (emergency)          | -   | F   | F    | F        | F        | T        | F   | F   | T   | F    | F    | F    |
+| **is_alert_active**                    | -   | F   | F    | F        | F        | F        | T   | T   | T   | F    | F    | F    |
+| **trong cooldown**                     | -   | -   | -    | F        | F        | F        | F   | F   | F   | T    | T    | T    |
+| **Actions/Outcomes:**                  |     |     |      |          |          |          |     |     |     |      |      |      |
+| Return None                            | ✓   | ✓   | ✓    |          |          |          |     |     |     |      |      |      |
+| Create warning alert                   |     |     |      | ✓        |          |          |     |     |     |      |      |      |
+| Create critical alert                  |     |     |      |          | ✓        |          |     |     |     |      |      |      |
+| Create emergency alert                 |     |     |      |          |          | ✓        |     |     |     |      |      |      |
+| Return info (normalized)               |     |     |      |          |          |          | ✓   | ✓   | ✓   |      |      |      |
+| Add to history                         |     |     |      | ✓        | ✓        | ✓        |     |     |     |      |      |      |
+| Return alert but NO history (cooldown) |     |     |      |          |          |          |     |     |     | ✓    | ✓    | ✓    |
+| **Test Cases:**                        | TC1 | TC2 | TC12 | TC4, TC5 | TC6, TC7 | TC8, TC9 | TC3 | TC3 | TC3 | TC10 | TC10 | TC10 |
+
+---
+
+### 7.2. DataLogger - Decision Table
+
+#### B1: Liệt kê các điều kiện đầu vào (Conditions)
+
+| Condition                 | Các giá trị có thể                                             |
+| ------------------------- | -------------------------------------------------------------- |
+| **enabled**               | True, False                                                    |
+| **Operation type**        | log_data, save_to_csv, save_immediate, load_data, export_excel |
+| **buffer_length**         | 0, >0                                                          |
+| **file_exists**           | True, False                                                    |
+| **data_exists** (in file) | Empty, Has data                                                |
+
+#### B2: Xác định số lượng Rules
+
+Vì có nhiều operations khác nhau, chúng ta tạo bảng riêng cho từng operation chính:
+
+**Bảng 2a: log_data() operation**
+
+| Conditions / Rules | R1  | R2       |
+| ------------------ | --- | -------- |
+| **enabled**        | F   | T        |
+| **Actions:**       |     |          |
+| Add to buffer      |     | ✓        |
+| No action          | ✓   |          |
+| **Test Cases:**    | TC5 | TC3, TC4 |
+
+**Bảng 2b: save_to_csv() operation**
+
+| Conditions / Rules           | R1  | R2  | R3  | R4  |
+| ---------------------------- | --- | --- | --- | --- |
+| **enabled**                  | F   | T   | T   | T   |
+| **buffer_length = 0**        | -   | T   | F   | F   |
+| **file_exists**              | -   | -   | F   | T   |
+| **Actions:**                 |     |     |     |     |
+| No action                    | ✓   | ✓   |     |     |
+| Create file + header + write |     |     | ✓   |     |
+| Append to file               |     |     |     | ✓   |
+| Clear buffer                 |     |     | ✓   | ✓   |
+| **Test Cases:**              | TC7 | TC6 | TC8 | TC9 |
+
+**Bảng 2c: save_immediate() operation**
+
+| Conditions / Rules                 | R1   | R2   | R3   |
+| ---------------------------------- | ---- | ---- | ---- |
+| **enabled**                        | F    | T    | T    |
+| **file_exists**                    | -    | F    | T    |
+| **Actions:**                       |      |      |      |
+| No action                          | ✓    |      |      |
+| Create file + header + write 1 row |      | ✓    |      |
+| Append 1 row (no header)           |      |      | ✓    |
+| **Test Cases:**                    | TC12 | TC10 | TC11 |
+
+**Bảng 2d: load_data() và các operations khác**
+
+| Conditions / Rules         | R1 (load) | R2 (load) | R3 (summary) | R4 (summary) | R5 (export) | R6 (export) |
+| -------------------------- | --------- | --------- | ------------ | ------------ | ----------- | ----------- |
+| **file_exists**            | F         | T         | -            | -            | -           | -           |
+| **data_exists**            | -         | T         | Empty        | Has data     | Empty       | Has data    |
+| **Actions:**               |           |           |              |              |             |             |
+| Return empty DataFrame     | ✓         |           |              |              |             |             |
+| Return DataFrame with data |           | ✓         |              |              |             |             |
+| Return empty dict          |           |           | ✓            |              |             |             |
+| Return summary stats       |           |           |              | ✓            |             |             |
+| No file created / no crash |           |           |              |              | ✓           |             |
+| Create .xlsx with data     |           |           |              |              |             | ✓           |
+| **Test Cases:**            | TC14      | TC13      | TC16         | TC15         | TC19        | TC18        |
+
+---
+
+### 7.3. PersonCounter - Decision Table
+
+#### B1: Liệt kê các điều kiện đầu vào (Conditions)
+
+| Condition            | Các giá trị có thể                      |
+| -------------------- | --------------------------------------- |
+| **detections count** | 0, 1, 2-10, >10                         |
+| **running_time**     | ≈0, >0 && <1, ≥1                        |
+| **history_length**   | 0, <100, =100, >100                     |
+| **Operation type**   | update_count, get_fps, get_stats, reset |
+
+#### B2: Xác định số lượng Rules
+
+**Bảng 3a: update_count() operation**
+
+| Conditions / Rules          | R1  | R2  | R3  | R4  | R5  |
+| --------------------------- | --- | --- | --- | --- | --- |
+| **detections count = 0**    | T   | F   | F   | F   | F   |
+| **detections count = 1**    | F   | T   | F   | F   | F   |
+| **detections count = 2-10** | F   | F   | T   | F   | F   |
+| **detections count > 10**   | F   | F   | F   | T   | T   |
+| **history_length > 100**    | F   | F   | F   | F   | T   |
+| **Actions:**                |     |     |     |     |     |
+| current_count = 0           | ✓   |     |     |     |     |
+| current_count = n           |     | ✓   | ✓   | ✓   | ✓   |
+| Update max_count            |     | ✓   | ✓   | ✓   | ✓   |
+| Add to history              | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Keep history ≤ 100          |     |     |     |     | ✓   |
+| Increment frame_count       | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Update total_detections     |     | ✓   | ✓   | ✓   | ✓   |
+| **Test Cases:**             | TC2 | TC3 | TC4 | TC5 | TC8 |
+
+**Bảng 3b: get_fps() operation**
+
+| Conditions / Rules          | R1   | R2   | R3   |
+| --------------------------- | ---- | ---- | ---- |
+| **running_time ≈ 0**        | T    | F    | F    |
+| **running_time > 0 && < 1** | F    | T    | F    |
+| **running_time ≥ 1**        | F    | F    | T    |
+| **Actions:**                |      |      |      |
+| Return fps = 0              | ✓    |      |      |
+| Return fps (high value)     |      | ✓    |      |
+| Return fps (normal value)   |      |      | ✓    |
+| **Test Cases:**             | TC13 | TC14 | TC14 |
+
+**Bảng 3c: detection_rate calculation**
+
+| Conditions / Rules          | R1   | R2  | R3   | R4   |
+| --------------------------- | ---- | --- | ---- | ---- |
+| **frames_with_persons = 0** | T    | F   | F    | F    |
+| **rate 0.1-0.3** (rare)     | F    | T   | F    | F    |
+| **rate 0.4-0.7** (medium)   | F    | F   | T    | F    |
+| **rate 0.8-1.0** (high)     | F    | F   | F    | T    |
+| **Actions:**                |      |     |      |      |
+| detection_rate = 0.0        | ✓    |     |      |      |
+| detection_rate = low        |      | ✓   |      |      |
+| detection_rate = medium     |      |     | ✓    |      |
+| detection_rate = high/1.0   |      |     |      | ✓    |
+| **Test Cases:**             | TC10 | -   | TC12 | TC11 |
+
+---
+
+### 7.4. PersonDetector - Decision Table
+
+#### B1: Liệt kê các điều kiện đầu vào (Conditions)
+
+| Condition       | Các giá trị có thể                                 |
+| --------------- | -------------------------------------------------- |
+| **frame state** | None/empty, valid, non-standard size               |
+| **YOLO boxes**  | None, 1 box, 2-5 boxes, >5 boxes                   |
+| **confidence**  | < threshold, = threshold, > threshold, high (≥0.9) |
+| **class_id**    | 0 (person), 1-79 (other), >79 (out of range)       |
+
+#### B2: Xác định số lượng Rules
+
+**Bảng 4a: Detection based on YOLO output**
+
+| Conditions / Rules         | R1  | R2  | R3  | R4       | R5  | R6  | R7   | R8        |
+| -------------------------- | --- | --- | --- | -------- | --- | --- | ---- | --------- |
+| **YOLO boxes = None**      | T   | F   | F   | F        | F   | F   | F    | F         |
+| **boxes = 1**              | F   | T   | T   | T        | F   | F   | F    | F         |
+| **boxes = 2-5**            | F   | F   | F   | F        | T   | F   | F    | F         |
+| **boxes > 5**              | F   | F   | F   | F        | F   | T   | F    | F         |
+| **conf < threshold**       | -   | T   | F   | F        | -   | -   | -    | -         |
+| **conf = threshold**       | -   | F   | T   | F        | -   | -   | -    | -         |
+| **conf > threshold**       | -   | F   | F   | T        | T   | T   | T    | T         |
+| **class_id = 0 (person)**  | -   | T   | T   | T        | T   | T   | T    | F         |
+| **class_id ≠ 0 (other)**   | -   | F   | F   | F        | F   | F   | F    | T         |
+| **Actions:**               |     |     |     |          |     |     |      |           |
+| Return empty list []       | ✓   | ✓   |     |          |     |     |      | ✓         |
+| Return 1 detection         |     |     | ✓   | ✓        |     |     |      |           |
+| Return multiple detections |     |     |     |          | ✓   | ✓   |      |           |
+| Filter non-person classes  |     |     |     |          |     |     | ✓    | ✓         |
+| **Test Cases:**            | TC4 | TC8 | TC9 | TC5,TC10 | TC6 | TC7 | TC13 | TC11,TC12 |
+
+**Bảng 4b: Frame preprocessing**
+
+| Conditions / Rules        | R1   | R2  | R3  |
+| ------------------------- | ---- | --- | --- |
+| **frame = empty/None**    | T    | F   | F   |
+| **frame = 640x480** (std) | F    | T   | F   |
+| **frame = other size**    | F    | F   | T   |
+| **Actions:**              |      |     |     |
+| Return empty list         | ✓    |     |     |
+| Process as-is             |      | ✓   | ✓   |
+| **Test Cases:**           | TC16 | TC2 | TC3 |
+
+**Bảng 4c: Confidence filtering**
+
+| Conditions / Rules         | R1  | R2  | R3        |
+| -------------------------- | --- | --- | --------- |
+| **conf < 0.5** (threshold) | T   | F   | F         |
+| **conf = 0.5**             | F   | T   | F         |
+| **conf ≥ 0.9** (high)      | F   | F   | T         |
+| **Actions:**               |     |     |           |
+| Filtered out by YOLO       | ✓   |     |           |
+| Accepted at threshold      |     | ✓   |           |
+| Accepted with high conf    |     |     | ✓         |
+| **Test Cases:**            | TC8 | TC9 | TC10,TC20 |
+
+---
+
+### 7.5. Ánh xạ Decision Table → Test Cases
+
+| Module         | Total Rules | Total Test Cases | Coverage |
+| -------------- | ----------- | ---------------- | -------- |
+| AlertSystem    | 12          | 20               | 100%     |
+| DataLogger     | 14          | 23               | 100%     |
+| PersonCounter  | 13          | 20               | 100%     |
+| PersonDetector | 14          | 20               | 100%     |
+| **TỔNG**       | **53**      | **83**           | **100%** |
+
+### 7.6. Kết luận về Decision Tables
+
+✅ **Ưu điểm của phương pháp Decision Table Testing:**
+
+1. **Bao phủ đầy đủ:** Xác định được tất cả các kết hợp có thể của điều kiện đầu vào
+2. **Rút gọn hiệu quả:** Giảm từ hàng trăm test cases lý thuyết về 53 rules thực tế
+3. **Dễ maintain:** Khi thêm điều kiện mới, dễ dàng mở rộng bảng
+4. **Phát hiện edge cases:** Giúp tìm ra các trường hợp biên và conflict logic
+5. **Tránh duplicate tests:** Nhìn tổng quan để loại bỏ test cases trùng lặp
+
+✅ **Quy trình áp dụng:**
+
+-   **B1:** Liệt kê tất cả conditions và values
+-   **B2:** Tính toán số rules lý thuyết (tích Descartes)
+-   **B3:** Tạo bảng đầy đủ với tất cả kết hợp
+-   **B4:** Rút gọn bằng cách:
+    -   Loại bỏ kết hợp không hợp lý (impossible combinations)
+    -   Gộp các rules có cùng outcome
+    -   Dùng "don't care" (-) cho điều kiện không ảnh hưởng
+
+✅ **Độ phủ (Coverage):**
+
+-   **100% rules coverage:** Mỗi rule trong bảng đều có ít nhất 1 test case
+-   **100% conditions coverage:** Mỗi điều kiện đều được test với tất cả giá trị có thể
+-   **100% actions coverage:** Mỗi outcome/action đều được verify
+
+---
+
+## 8. Chạy Tests
 
 ### Chạy tất cả unit tests
 

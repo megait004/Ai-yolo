@@ -2,12 +2,12 @@ train: ../train/images
 val: ../valid/images
 test: ../test/images
 
-nc: 1
-names: ['person']
+nc: 2
+names: ['1', 'person']
 
 roboflow:
-    workspace: giapzech
-    project: person-detection-snvsw-iiwim
-    version: 2
-    license: CC BY 4.0
-    url: https://universe.roboflow.com/giapzech/person-detection-snvsw-iiwim/dataset/2
+  workspace: giapzech
+  project: person-detection-final-wj5ay
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/giapzech/person-detection-final-wj5ay/dataset/1
