@@ -11,7 +11,6 @@ SRC_ROOT = PROJECT_ROOT / "src"
 DATA_ROOT = PROJECT_ROOT / "data"
 MODELS_ROOT = PROJECT_ROOT / "models"
 OUTPUT_ROOT = PROJECT_ROOT / "output"
-LOGS_ROOT = PROJECT_ROOT / "logs"
 
 # YOLO Configuration
 YOLO_MODEL = "C:/Users/GiapHue04/Desktop/yolo/Ai-yolo/models/trained/giapzech3/weights/best.pt"  # Options: yolov8n.pt, yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
@@ -48,18 +47,11 @@ SAVE_INTERVAL = 1  # seconds
 DATA_DIR = DATA_ROOT / "processed"
 
 # Output Configuration
-OUTPUT_IMAGES_DIR = OUTPUT_ROOT / "images"
-OUTPUT_VIDEOS_DIR = OUTPUT_ROOT / "videos"
 OUTPUT_REPORTS_DIR = OUTPUT_ROOT / "reports"
 
 # Model Configuration
 MODEL_PRETRAINED_DIR = MODELS_ROOT / "pretrained"
 MODEL_TRAINED_DIR = MODELS_ROOT / "trained"
-
-# Logging Configuration
-LOG_LEVEL = "INFO"
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-LOG_FILE = LOGS_ROOT / "app.log"
 
 # UI Configuration (for future UI development)
 UI_THEME = "dark"
@@ -93,8 +85,8 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # Create directories if they don't exist
 for directory in [
-    DATA_ROOT, MODELS_ROOT, OUTPUT_ROOT, LOGS_ROOT,
-    DATA_DIR, OUTPUT_IMAGES_DIR, OUTPUT_VIDEOS_DIR, OUTPUT_REPORTS_DIR,
+    DATA_ROOT, MODELS_ROOT, OUTPUT_ROOT,
+    DATA_DIR, OUTPUT_REPORTS_DIR,
     MODEL_PRETRAINED_DIR, MODEL_TRAINED_DIR, TEST_DATA_DIR, TEST_OUTPUT_DIR
 ]:
     directory.mkdir(parents=True, exist_ok=True)

@@ -117,7 +117,6 @@ ci-test: install-dev
 	bandit -r src/ || true
 	safety check || true
 
-
 # Data management
 download-models:
 	python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
@@ -125,8 +124,7 @@ download-models:
 create-dirs:
 	mkdir -p data/raw data/processed
 	mkdir -p models/pretrained models/trained
-	mkdir -p output/images output/videos output/reports
-	mkdir -p logs
+	mkdir -p output/reports
 
 # Quick start
 quick-start: install setup
