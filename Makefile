@@ -122,7 +122,7 @@ download-models:
 	python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 
 create-dirs:
-	mkdir -p data/raw data/processed
+	mkdir -p data/processed
 	mkdir -p models/pretrained models/trained
 	mkdir -p output/reports
 

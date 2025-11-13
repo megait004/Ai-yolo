@@ -58,10 +58,6 @@ UI_THEME = "dark"
 UI_WINDOW_SIZE = (1200, 800)
 UI_REFRESH_RATE = 30  # FPS
 
-# Testing Configuration
-TEST_DATA_DIR = DATA_ROOT / "raw" / "test"
-TEST_OUTPUT_DIR = OUTPUT_ROOT / "test_results"
-
 # Performance Configuration
 MAX_FPS = 60
 ENABLE_GPU = True
@@ -87,6 +83,6 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 for directory in [
     DATA_ROOT, MODELS_ROOT, OUTPUT_ROOT,
     DATA_DIR, OUTPUT_REPORTS_DIR,
-    MODEL_PRETRAINED_DIR, MODEL_TRAINED_DIR, TEST_DATA_DIR, TEST_OUTPUT_DIR
+    MODEL_PRETRAINED_DIR, MODEL_TRAINED_DIR,
 ]:
     directory.mkdir(parents=True, exist_ok=True)
