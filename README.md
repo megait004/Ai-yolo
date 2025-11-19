@@ -108,8 +108,6 @@ pytest
 python scripts/run_gui.py
 ```
 
-Xem hướng dẫn chi tiết tại [GUI Guide](docs/GUI_GUIDE.md)
-
 ## 🧪 Testing
 
 ### Chạy tất cả tests

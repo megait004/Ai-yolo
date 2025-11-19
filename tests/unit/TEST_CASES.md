@@ -14,9 +14,9 @@ Tài liệu này mô tả chi tiết các phân vùng (partitions) và test case
 
 **Giả định:**
 
-- `max_count = 10` (ngưỡng cảnh báo)
-- `alert_cooldown = 5` (giây)
-- `enabled = True` (trừ khi chỉ định khác)
+-   `max_count = 10` (ngưỡng cảnh báo)
+-   `alert_cooldown = 5` (giây)
+-   `enabled = True` (trừ khi chỉ định khác)
 
 **Các phân vùng theo person_count:**
 
@@ -33,9 +33,9 @@ Tài liệu này mô tả chi tiết các phân vùng (partitions) và test case
 
 **Phân vùng đặc biệt:**
 
-- **Partition 6:** count > 10 nhưng đang trong cooldown → Cảnh báo tạm thời (không ghi history)
-- **Partition 7:** enabled = False → Luôn trả về None
-- **Partition 8:** count ≤ 10 khi is_alert_active = True → Info (kết thúc cảnh báo)
+-   **Partition 6:** count > 10 nhưng đang trong cooldown → Cảnh báo tạm thời (không ghi history)
+-   **Partition 7:** enabled = False → Luôn trả về None
+-   **Partition 8:** count ≤ 10 khi is_alert_active = True → Info (kết thúc cảnh báo)
 
 ### 1.2. Bảng Test Cases - AlertSystem
 
@@ -228,7 +228,7 @@ Tài liệu này mô tả chi tiết các phân vùng (partitions) và test case
 
 **Giả định:**
 
-- `max_history = 100` (số frame tối đa lưu lịch sử)
+-   `max_history = 100` (số frame tối đa lưu lịch sử)
 
 **Các phân vùng theo số lượng detections:**
 
@@ -304,9 +304,9 @@ Tài liệu này mô tả chi tiết các phân vùng (partitions) và test case
 
 **Giả định:**
 
-- `confidence_threshold = 0.5` (ngưỡng tin cậy)
-- `iou_threshold = 0.35` (ngưỡng IoU)
-- `person_class_id = 0` (class ID của người trong COCO)
+-   `confidence_threshold = 0.5` (ngưỡng tin cậy)
+-   `iou_threshold = 0.35` (ngưỡng IoU)
+-   `person_class_id = 0` (class ID của người trong COCO)
 
 **Các phân vùng theo confidence score:**
 
@@ -486,64 +486,7 @@ Tài liệu này mô tả chi tiết các phân vùng (partitions) và test case
 
 **Tổng số:** 5 test functions covering 20+ test cases (with mocking)
 
----
-
-## 6. Kết luận
-
-### 6.1. Độ phủ Test (Coverage)
-
-- **AlertSystem:** 28 tests covering:
-
-  - ✅ Tất cả phân vùng severity (warning/critical/emergency)
-  - ✅ Cooldown mechanism
-  - ✅ State transitions (active/inactive)
-  - ✅ History management
-  - ✅ File I/O (save_alert_log)
-  - ✅ Configuration changes
-
-- **DataLogger:** 23 tests covering:
-
-  - ✅ Tất cả phân vùng enabled/disabled
-  - ✅ Buffer operations
-  - ✅ CSV file operations (create/append/read)
-  - ✅ Excel export
-  - ✅ Statistics calculations
-  - ✅ Edge cases (empty data, missing keys)
-
-- **PersonCounter:** 11 tests covering:
-
-  - ✅ Đếm số lượng người (empty/single/multiple)
-  - ✅ Max count tracking
-  - ✅ History management với deque (maxlen=100)
-  - ✅ Tính toán thống kê (average, detection_rate, fps)
-  - ✅ Running time tracking
-  - ✅ Reset functionality
-
-- **PersonDetector:** 5 tests covering:
-  - ✅ Khởi tạo và cấu hình threshold
-  - ✅ Frame preprocessing
-  - ✅ Detection với mock YOLO (empty/single/multiple)
-  - ✅ Filtering theo class_id (chỉ lấy person=0)
-  - ✅ Model info retrieval
-
-### 6.2. Test Results
-
-```
-============================= test session starts =============================
-tests/unit/alert_system_test.py ............................             [ 41%]
-tests/unit/data_logger_test.py .......................                   [ 76%]
-tests/unit/person_counter_test.py ...........                            [ 92%]
-tests/unit/person_detector_test.py .....                                 [100%]
-
-============================= 67 passed, 1 warning in 10.56s ========================
-```
-
-✅ **67/67 tests PASSED (100%)**
-✅ **0 linter errors**
-✅ **All partitions covered**
-✅ **4 modules fully tested**
-
-### 6.3. Tổng kết phân vùng
+## 6. Tổng kết phân vùng
 
 | Module         | Số Test Cases | Số Phân vùng chính | Complexity                              |
 | -------------- | ------------- | ------------------ | --------------------------------------- |
@@ -811,19 +754,19 @@ Vì có nhiều operations khác nhau, chúng ta tạo bảng riêng cho từng 
 
 ✅ **Quy trình áp dụng:**
 
-- **B1:** Liệt kê tất cả conditions và values
-- **B2:** Tính toán số rules lý thuyết (tích Descartes)
-- **B3:** Tạo bảng đầy đủ với tất cả kết hợp
-- **B4:** Rút gọn bằng cách:
-  - Loại bỏ kết hợp không hợp lý (impossible combinations)
-  - Gộp các rules có cùng outcome
-  - Dùng "don't care" (-) cho điều kiện không ảnh hưởng
+-   **B1:** Liệt kê tất cả conditions và values
+-   **B2:** Tính toán số rules lý thuyết (tích Descartes)
+-   **B3:** Tạo bảng đầy đủ với tất cả kết hợp
+-   **B4:** Rút gọn bằng cách:
+    -   Loại bỏ kết hợp không hợp lý (impossible combinations)
+    -   Gộp các rules có cùng outcome
+    -   Dùng "don't care" (-) cho điều kiện không ảnh hưởng
 
 ✅ **Độ phủ (Coverage):**
 
-- **100% rules coverage:** Mỗi rule trong bảng đều có ít nhất 1 test case
-- **100% conditions coverage:** Mỗi điều kiện đều được test với tất cả giá trị có thể
-- **100% actions coverage:** Mỗi outcome/action đều được verify
+-   **100% rules coverage:** Mỗi rule trong bảng đều có ít nhất 1 test case
+-   **100% conditions coverage:** Mỗi điều kiện đều được test với tất cả giá trị có thể
+-   **100% actions coverage:** Mỗi outcome/action đều được verify
 
 ---
 
