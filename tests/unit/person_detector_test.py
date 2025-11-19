@@ -94,7 +94,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_result = Mock()
 
         # Mock 3 detections
-        boxes = np.array([[i * 50, i * 50, (i + 1) * 50, (i + 1) * 50] for i in range(3)])
+        boxes = np.array(
+            [[i * 50, i * 50, (i + 1) * 50, (i + 1) * 50] for i in range(3)]
+        )
         confidences = np.array([0.8, 0.85, 0.9])
         classes = np.array([0] * 3)
 
@@ -117,7 +119,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_result = Mock()
 
         # Mock 10 detections
-        boxes = np.array([[i * 50, i * 50, (i + 1) * 50, (i + 1) * 50] for i in range(10)])
+        boxes = np.array(
+            [[i * 50, i * 50, (i + 1) * 50, (i + 1) * 50] for i in range(10)]
+        )
         confidences = np.array([0.7 + i * 0.01 for i in range(10)])
         classes = np.array([0] * 10)
 
@@ -160,7 +164,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_model = Mock()
         mock_result = Mock()
 
-        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.5])
         mock_result.boxes.cls.cpu.return_value.numpy.return_value = np.array([0])
         mock_model.return_value = [mock_result]
@@ -179,7 +185,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_model = Mock()
         mock_result = Mock()
 
-        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.95])
         mock_result.boxes.cls.cpu.return_value.numpy.return_value = np.array([0])
         mock_model.return_value = [mock_result]
@@ -223,7 +231,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_model = Mock()
         mock_result = Mock()
 
-        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.9])
         mock_result.boxes.cls.cpu.return_value.numpy.return_value = np.array([85])
         mock_model.return_value = [mock_result]
@@ -243,7 +253,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_result = Mock()
 
         # 5 detections: person, bicycle, person, car, person
-        boxes = np.array([[i * 20, i * 20, (i + 1) * 20, (i + 1) * 20] for i in range(5)])
+        boxes = np.array(
+            [[i * 20, i * 20, (i + 1) * 20, (i + 1) * 20] for i in range(5)]
+        )
         confidences = np.array([0.8, 0.9, 0.85, 0.88, 0.92])
         classes = np.array([0, 1, 0, 2, 0])
 
@@ -317,7 +329,12 @@ class TestPersonDetector(unittest.TestCase):
         info = self.detector.get_model_info()
 
         # Kiểm tra tất cả keys cần thiết
-        required_keys = ["model_name", "confidence_threshold", "iou_threshold", "input_size"]
+        required_keys = [
+            "model_name",
+            "confidence_threshold",
+            "iou_threshold",
+            "input_size",
+        ]
         for key in required_keys:
             self.assertIn(key, info)
 
@@ -326,7 +343,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_model = Mock()
         mock_result = Mock()
 
-        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.85])
         mock_result.boxes.cls.cpu.return_value.numpy.return_value = np.array([0])
         mock_model.return_value = [mock_result]
@@ -359,7 +378,9 @@ class TestPersonDetector(unittest.TestCase):
 
         # Kết quả khác nhau cho mỗi lần gọi
         mock_result1 = Mock()
-        mock_result1.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result1.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result1.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.8])
         mock_result1.boxes.cls.cpu.return_value.numpy.return_value = np.array([0])
 
@@ -367,7 +388,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_result2.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
             [[0, 0, 10, 10], [20, 20, 30, 30]]
         )
-        mock_result2.boxes.conf.cpu.return_value.numpy.return_value = np.array([0.8, 0.9])
+        mock_result2.boxes.conf.cpu.return_value.numpy.return_value = np.array(
+            [0.8, 0.9]
+        )
         mock_result2.boxes.cls.cpu.return_value.numpy.return_value = np.array([0, 0])
 
         mock_model.side_effect = [[mock_result1], [mock_result2]]
@@ -393,7 +416,9 @@ class TestPersonDetector(unittest.TestCase):
         mock_model = Mock()
         mock_result = Mock()
 
-        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array([[0, 0, 10, 10]])
+        mock_result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            [[0, 0, 10, 10]]
+        )
         mock_result.boxes.conf.cpu.return_value.numpy.return_value = np.array([1.0])
         mock_result.boxes.cls.cpu.return_value.numpy.return_value = np.array([0])
         mock_model.return_value = [mock_result]

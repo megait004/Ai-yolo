@@ -59,7 +59,11 @@ class TestPersonCounter(unittest.TestCase):
     def test_update_count_many_detections(self):
         """TC5: Test với >10 detections (15 người)"""
         detections = [
-            {"bbox": [i * 10, i * 10, (i + 1) * 10, (i + 1) * 10], "confidence": 0.9, "class_id": 0}
+            {
+                "bbox": [i * 10, i * 10, (i + 1) * 10, (i + 1) * 10],
+                "confidence": 0.9,
+                "class_id": 0,
+            }
             for i in range(15)
         ]
 
@@ -123,20 +127,26 @@ class TestPersonCounter(unittest.TestCase):
     def test_total_detections_accumulates(self):
         """TC9: Test total_detections cộng dồn qua nhiều lần update"""
         # Lần 1: 1 detection
-        self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+        self.counter.update_count(
+            [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+        )
 
         # Lần 2: 2 detections
-        self.counter.update_count([
-            {"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0},
-            {"bbox": [20, 20, 30, 30], "confidence": 0.9, "class_id": 0},
-        ])
+        self.counter.update_count(
+            [
+                {"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0},
+                {"bbox": [20, 20, 30, 30], "confidence": 0.9, "class_id": 0},
+            ]
+        )
 
         # Lần 3: 3 detections
-        self.counter.update_count([
-            {"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0},
-            {"bbox": [20, 20, 30, 30], "confidence": 0.9, "class_id": 0},
-            {"bbox": [40, 40, 50, 50], "confidence": 0.9, "class_id": 0},
-        ])
+        self.counter.update_count(
+            [
+                {"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0},
+                {"bbox": [20, 20, 30, 30], "confidence": 0.9, "class_id": 0},
+                {"bbox": [40, 40, 50, 50], "confidence": 0.9, "class_id": 0},
+            ]
+        )
 
         # Tổng = 1 + 2 + 3 = 6 detections
         self.assertEqual(self.counter.total_detections, 6)
@@ -152,7 +162,9 @@ class TestPersonCounter(unittest.TestCase):
     def test_detection_rate_one_all_detected_frames(self):
         """TC11: Test detection_rate = 1.0 khi tất cả frames có người"""
         for _ in range(10):
-            self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+            self.counter.update_count(
+                [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+            )
 
         rate = self.counter.get_detection_rate()
         self.assertEqual(rate, 1.0)
@@ -162,7 +174,9 @@ class TestPersonCounter(unittest.TestCase):
         for i in range(10):
             if i < 7:
                 # 7 frames có người
-                self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+                self.counter.update_count(
+                    [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+                )
             else:
                 # 3 frames rỗng
                 self.counter.update_count([])
@@ -207,7 +221,9 @@ class TestPersonCounter(unittest.TestCase):
         """TC16: Test get_count_history trả về tuple (counts, timestamps)"""
         # Thêm vài detections
         for i in range(3):
-            self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}] * i)
+            self.counter.update_count(
+                [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}] * i
+            )
 
         history, timestamps = self.counter.get_count_history()
 
@@ -258,16 +274,22 @@ class TestPersonCounter(unittest.TestCase):
         self.counter.update_count([])
 
         # Frame 2: có 1 người
-        self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+        self.counter.update_count(
+            [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+        )
 
         # Frame 3: rỗng
         self.counter.update_count([])
 
         # Frame 4: có 1 người
-        self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+        self.counter.update_count(
+            [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+        )
 
         # Frame 5: có 1 người
-        self.counter.update_count([{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}])
+        self.counter.update_count(
+            [{"bbox": [0, 0, 10, 10], "confidence": 0.9, "class_id": 0}]
+        )
 
         # Chỉ có 3 frames có người
         stats = self.counter.get_all_stats()
