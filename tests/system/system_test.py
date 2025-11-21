@@ -26,6 +26,7 @@ from src.core.data_logger import DataLogger
 # FIXTURES
 # ============================================================================
 
+
 @pytest.fixture
 def temp_dirs(tmp_path):
     """Tạo các thư mục tạm cho tests"""
@@ -38,7 +39,7 @@ def temp_dirs(tmp_path):
         "output": output_dir,
         "csv": output_dir / "test_log.csv",
         "alert": output_dir / "alert_log.txt",
-        "excel": output_dir / "test_export.xlsx"
+        "excel": output_dir / "test_export.xlsx",
     }
 
 
@@ -80,7 +81,7 @@ def full_system(mock_detector, person_counter, alert_system, data_logger):
         "detector": mock_detector,
         "counter": person_counter,
         "alert": alert_system,
-        "logger": data_logger
+        "logger": data_logger,
     }
 
 
@@ -101,17 +102,20 @@ def create_mock_detections(num_persons):
     for i in range(num_persons):
         x = 50 + (i % 5) * 100
         y = 50 + (i // 5) * 100
-        detections.append({
-            "bbox": [x, y, x + 80, y + 150],
-            "confidence": 0.8 + (i * 0.01),
-            "class_id": 0
-        })
+        detections.append(
+            {
+                "bbox": [x, y, x + 80, y + 150],
+                "confidence": 0.8 + (i * 0.01),
+                "class_id": 0,
+            }
+        )
     return detections
 
 
 # ============================================================================
 # TEST CLASS 1: VIDEO PROCESSING
 # ============================================================================
+
 
 class TestVideoProcessing:
     """Test cases STC1-STC10: Video Processing System"""
@@ -183,7 +187,7 @@ class TestVideoProcessing:
         logger = full_system["logger"]
 
         # Giả lập video: 0-5-10-15-15-15 người
-        person_sequence = [0]*10 + [5]*10 + [10]*10 + [15]*20
+        person_sequence = [0] * 10 + [5] * 10 + [10] * 10 + [15] * 20
 
         for count in person_sequence:
             detector.detect_persons = Mock(return_value=create_mock_detections(count))
@@ -301,6 +305,7 @@ class TestVideoProcessing:
 # TEST CLASS 2: ALERT INTEGRATION
 # ============================================================================
 
+
 class TestAlertIntegration:
     """Test cases STC11-STC18: Alert System Integration"""
 
@@ -332,7 +337,7 @@ class TestAlertIntegration:
         detector = full_system["detector"]
 
         # Sequence: 8 → 11 → 12 → 10
-        sequence = [8]*10 + [11]*10 + [12]*10 + [10]*10
+        sequence = [8] * 10 + [11] * 10 + [12] * 10 + [10] * 10
 
         for count in sequence:
             detector.detect_persons = Mock(return_value=create_mock_detections(count))
@@ -359,7 +364,7 @@ class TestAlertIntegration:
         detector = full_system["detector"]
 
         # Sequence: 10 → 13 → 15 → 12
-        sequence = [10]*10 + [13]*10 + [15]*10 + [12]*10
+        sequence = [10] * 10 + [13] * 10 + [15] * 10 + [12] * 10
 
         for count in sequence:
             detector.detect_persons = Mock(return_value=create_mock_detections(count))
@@ -373,8 +378,9 @@ class TestAlertIntegration:
         assert len(history) > 0
 
         # Kiểm tra có critical hoặc emergency
-        critical_or_emergency = [a for a in history
-                                 if a.get("type") in ["critical", "emergency"]]
+        critical_or_emergency = [
+            a for a in history if a.get("type") in ["critical", "emergency"]
+        ]
         assert len(critical_or_emergency) > 0
 
     def test_STC14_emergency_alert(self, full_system, temp_dirs):
@@ -384,7 +390,7 @@ class TestAlertIntegration:
         detector = full_system["detector"]
 
         # Sequence: 10 → 18
-        sequence = [10]*10 + [18]*20
+        sequence = [10] * 10 + [18] * 20
 
         for count in sequence:
             detector.detect_persons = Mock(return_value=create_mock_detections(count))
@@ -527,6 +533,7 @@ class TestAlertIntegration:
 # TEST CLASS 3: DATA LOGGING INTEGRATION
 # ============================================================================
 
+
 class TestDataLoggingIntegration:
     """Test cases STC19-STC26: Data Logging Integration"""
 
@@ -633,7 +640,9 @@ class TestDataLoggingIntegration:
 
         # Kiểm tra timestamp tăng dần
         timestamps = df["timestamp"].tolist()
-        assert all(timestamps[i] <= timestamps[i+1] for i in range(len(timestamps)-1))
+        assert all(
+            timestamps[i] <= timestamps[i + 1] for i in range(len(timestamps) - 1)
+        )
 
     def test_STC23_summary_stats(self, full_system, temp_dirs):
         """STC23: Summary statistics"""
@@ -703,7 +712,7 @@ class TestDataLoggingIntegration:
             "fps": 30.789,
             "running_time": 100.123,
             "detection_rate": 0.8234,
-            "frames_with_persons": 8
+            "frames_with_persons": 8,
         }
 
         logger.log_data(stats)
@@ -761,6 +770,7 @@ class TestDataLoggingIntegration:
 # ============================================================================
 # TEST CLASS 4: END-TO-END FULL SYSTEM
 # ============================================================================
+
 
 class TestEndToEndFullSystem:
     """Test cases STC27-STC36: Full System E2E"""
@@ -979,6 +989,7 @@ class TestEndToEndFullSystem:
 # TEST CLASS 5: PERFORMANCE TESTING
 # ============================================================================
 
+
 class TestPerformance:
     """Test cases STC37-STC43: Performance Testing"""
 
@@ -1086,7 +1097,9 @@ class TestPerformance:
 
             for frame_idx in range(frames_per_video):
                 count = 3 + (frame_idx % 5)
-                detector.detect_persons = Mock(return_value=create_mock_detections(count))
+                detector.detect_persons = Mock(
+                    return_value=create_mock_detections(count)
+                )
                 frame = create_mock_frame(num_persons=count)
 
                 detections = detector.detect_persons(frame)
@@ -1108,6 +1121,7 @@ class TestPerformance:
 # TEST CLASS 6: MODULE INTEGRATION
 # ============================================================================
 
+
 class TestModuleIntegration:
     """Test cases STC44-STC50: Module Integration"""
 
@@ -1125,7 +1139,9 @@ class TestModuleIntegration:
 
         # Assertions
         assert person_counter.get_current_count() == 5
-        assert person_counter.total_detections == 5  # Dùng attribute trực tiếp, không có getter
+        assert (
+            person_counter.total_detections == 5
+        )  # Dùng attribute trực tiếp, không có getter
         assert person_counter.frame_count == 1  # frame_count cũng là attribute
 
     def test_STC45_counter_to_alert(self, person_counter, alert_system):
