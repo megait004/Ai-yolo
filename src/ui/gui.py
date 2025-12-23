@@ -4,6 +4,7 @@ Sử dụng PyQt6
 """
 
 import os
+from src.config import OUTPUT_REPORTS_DIR
 
 # CRITICAL: Must be first, before any torch/ultralytics imports
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -651,7 +652,6 @@ class PersonDetectionGUI(QMainWindow):
         total_alerts = alert_stats.get("total_alerts", 0)
         if isinstance(total_alerts, int) and total_alerts > 0:
             try:
-                from config.settings import OUTPUT_REPORTS_DIR
 
                 log_filename = (
                     OUTPUT_REPORTS_DIR

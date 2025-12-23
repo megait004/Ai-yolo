@@ -5,7 +5,7 @@ Module hệ thống cảnh báo khi số lượng người vượt ngưỡng
 import time
 from datetime import datetime
 
-from config.settings import ALERT_ENABLED, MAX_PERSON_COUNT
+from src.config import ALERT_ENABLED, MAX_PERSON_COUNT
 
 
 class AlertSystem:

@@ -8,7 +8,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from config.settings import CSV_FILENAME, DATA_DIR, SAVE_TO_CSV
+from src.config import CSV_FILENAME, DATA_DIR, SAVE_TO_CSV
 
 
 class DataLogger:

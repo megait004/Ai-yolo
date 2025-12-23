@@ -5,7 +5,7 @@ Module hiển thị kết quả trực quan với bounding box và thông tin
 import cv2
 import numpy as np
 
-from config.settings import (
+from src.config import (
     BOUNDING_BOX_COLOR,
     FONT_SCALE,
     FONT_THICKNESS,

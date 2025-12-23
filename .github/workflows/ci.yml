@@ -16,7 +16,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            # 👉 Thêm bước giải phóng dung lượng
+
             - name: Free disk space
               run: |
                   sudo rm -rf /usr/share/dotnet
@@ -81,7 +81,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            # 👉 Thêm bước giải phóng dung lượng
+
             - name: Free disk space
               run: |
                   sudo rm -rf /usr/share/dotnet
@@ -112,7 +112,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            # 👉 Thêm bước giải phóng dung lượng
+
             - name: Free disk space
               run: |
                   sudo rm -rf /usr/share/dotnet
@@ -153,7 +153,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            # 👉 Thêm bước giải phóng dung lượng
+
             - name: Free disk space
               run: |
                   sudo rm -rf /usr/share/dotnet

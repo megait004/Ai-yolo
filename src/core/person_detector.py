@@ -7,7 +7,7 @@ import os
 # CRITICAL: Must be first, before any torch/ultralytics imports
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from config.settings import (
+from src.config import (
     CONFIDENCE_THRESHOLD,
     IOU_THRESHOLD,
     PERSON_CLASS_ID,
